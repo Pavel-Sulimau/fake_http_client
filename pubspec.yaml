@@ -1,7 +1,7 @@
 name: fake_http_client
 version: 0.0.2
 author: Pavel Sulimau <pavel.sulimau@gmail.com>
-description: A package for faking an http client's responses.
+description: A package for faking Dart HttpClient's responses.
 homepage: https://github.com/Pavel-Sulimau/http_test_client
 
 environment:
@@ -9,4 +9,3 @@ environment:
 
 dev_dependencies:
   test: 1.15.7
-

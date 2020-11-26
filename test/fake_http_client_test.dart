@@ -1,25 +1,25 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fake_http_client/http_test_client.dart';
+import 'package:fake_http_client/fake_http_client.dart';
 import 'package:test/test.dart';
 
 class HttpTestOverrides extends HttpOverrides {
-  HttpTestClient testClient;
+  FakeHttpClient fakeHttpClient;
 
   @override
-  HttpClient createHttpClient(SecurityContext context) => testClient;
+  HttpClient createHttpClient(SecurityContext context) => fakeHttpClient;
 }
 
 void main() {
   final HttpTestOverrides overrides = HttpTestOverrides();
   HttpOverrides.global = overrides;
 
-  group(HttpTestClient, () {
+  group(FakeHttpClient, () {
     setUp(() {
-      overrides.testClient =
-          HttpTestClient((HttpClientRequest request, HttpTestClient client) {
-        return HttpTestResponse(
+      overrides.fakeHttpClient =
+          FakeHttpClient((HttpClientRequest request, FakeHttpClient client) {
+        return FakeHttpResponse(
           body: 'Hello World',
           statusCode: HttpStatus.ok,
           headers: {'foo': 'bar'},
@@ -28,13 +28,13 @@ void main() {
     });
 
     tearDown(() {
-      overrides.testClient = null;
+      overrides.fakeHttpClient = null;
     });
 
     test('can be provided using HttpOverrides', () {
       final HttpClient client = HttpClient();
 
-      expect(client, isA<HttpTestClient>());
+      expect(client, isA<FakeHttpClient>());
     });
 
     test('returns a body of "Hello World" and headers', () async {
@@ -47,7 +47,7 @@ void main() {
       expect(response.headers.value('foo'), 'bar');
     });
 
-    group(HttpTestHeaders, () {
+    group(FakeHttpHeaders, () {
       HttpHeaders headers;
 
       setUp(() async {

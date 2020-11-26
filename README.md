@@ -1,18 +1,17 @@
-# http_test_client
-A package for testing http clients on flutter or the Dart vm.
-
+# fake_http_client
+A package for faking Dart HttpClient's responses.
 
 ## Example
 The following example forces all HTTP requests to return a
-successful empty response in a test enviornment.  No actual HTTP requests will be performed.
+successful empty response in a test environment.  No actual HTTP requests will be performed.
 
 ```dart
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(_) {
-    return new HttpTestClient((request, client) {
+    return FakeHttpClient((request, client) {
         // the default response is an empty 200.
-        return new HttpTestResponse();
+        return HttpTestResponse();
     });
   }
 }
@@ -21,16 +20,16 @@ void main() {
   group('HttpClient', () {
     setUp(() {
       // overrides all HttpClients.
-      HttpOverrides.global = new MyHttpOverrides();
+      HttpOverrides.global = MyHttpOverrides();
     });
 
     test('returns OK', () async {
-      // this is actually an instance of [HttpTestClient].
-      final client = new HttpClient();
-      final request = client.getUrl(new Uri.https('google.com'));
+      // this is actually an instance of [FakeHttpClient].
+      final client = HttpClient();
+      final request = client.getUrl(Uri.https('google.com'));
       final response = await request.close();
 
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
     });
   });
 }

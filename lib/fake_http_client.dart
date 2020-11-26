@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-/// Fakes a server response for the [HttpTestClient].
-typedef RequestCallback = FutureOr<HttpTestResponse> Function(
-    HttpClientRequest, HttpTestClient);
+/// Fakes a server response for the [FakeHttpClient].
+typedef RequestCallback = FutureOr<FakeHttpResponse> Function(
+    HttpClientRequest, FakeHttpClient);
 
 /// A callback to simulate authentication.
 ///
@@ -41,7 +41,7 @@ typedef FindProxyCallback = String Function(Uri);
 
 /// A fake [HttpClient] for testing Flutter or Dart VM applications.
 ///
-/// Using [HttpOverrides.global] and an [HttpTestClient], you can test code which
+/// Using [HttpOverrides.global] and an [FakeHttpClient], you can test code which
 /// uses [HttpClient()] without dependency injection. All you need to do
 /// is create a test client and specify how you want it to respond using a
 /// [RequestCallback].
@@ -66,8 +66,8 @@ typedef FindProxyCallback = String Function(Uri);
 ///
 ///     class MyHttpOverrides extends HttpOverrides {
 ///       HttpClient() createClient(_) {
-///         return HttpTestClient((HttpRequest request, HttpTestClient client) {
-///           return HttpTestResponse();
+///         return FakeHttpClient((HttpRequest request, FakeHttpClient client) {
+///           return FakeHttpResponse();
 ///         });
 ///       }
 ///     }
@@ -78,12 +78,12 @@ typedef FindProxyCallback = String Function(Uri);
 ///
 ///       group('Widget tests', () {
 ///         test('returns 200', () async {
-///            // this is actually an instance of [HttpTestClient].
+///            // this is actually an instance of [FakeHttpClient].
 ///            final client = HttpClient();
 ///            final request = client.getUrl(Uri.https('google.com'));
 ///            final response = await request.close();
 ///
-///            expect(response.statusCode, HttpStatus.OK);
+///            expect(response.statusCode, HttpStatus.ok);
 ///         });
 ///       });
 ///     }
@@ -95,10 +95,10 @@ typedef FindProxyCallback = String Function(Uri);
 /// See also:
 ///
 ///   * [HttpClient]
-///   * [HttpTestResponse]
+///   * [FakeHttpResponse]
 ///   * [HttpOverrides]
-class HttpTestClient implements HttpClient {
-  HttpTestClient(this._requestCallback);
+class FakeHttpClient implements HttpClient {
+  FakeHttpClient(this._requestCallback);
 
   final RequestCallback _requestCallback;
 
@@ -144,11 +144,11 @@ class HttpTestClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> deleteUrl(Uri url) {
-    final HttpClientRequest response = HttpTestClientRequest._(
+    final HttpClientRequest response = FakeHttpClientRequest._(
       this,
       'DELETE',
       url,
-      HttpTestHeaders.__(<String, List<String>>{}),
+      FakeHttpHeaders.__(<String, List<String>>{}),
     );
     return Future.value(response);
   }
@@ -160,11 +160,11 @@ class HttpTestClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> getUrl(Uri url) {
-    final HttpClientRequest response = HttpTestClientRequest._(
+    final HttpClientRequest response = FakeHttpClientRequest._(
       this,
       'GET',
       url,
-      HttpTestHeaders.__(<String, List<String>>{}),
+      FakeHttpHeaders.__(<String, List<String>>{}),
     );
     return Future.value(response);
   }
@@ -176,11 +176,11 @@ class HttpTestClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> headUrl(Uri url) {
-    final HttpClientRequest response = HttpTestClientRequest._(
+    final HttpClientRequest response = FakeHttpClientRequest._(
       this,
       'HEAD',
       url,
-      HttpTestHeaders.__(<String, List<String>>{}),
+      FakeHttpHeaders.__(<String, List<String>>{}),
     );
     return Future.value(response);
   }
@@ -193,11 +193,11 @@ class HttpTestClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> openUrl(String method, Uri url) {
-    final HttpClientRequest response = HttpTestClientRequest._(
+    final HttpClientRequest response = FakeHttpClientRequest._(
       this,
       method.toUpperCase(),
       url,
-      HttpTestHeaders.__(<String, List<String>>{}),
+      FakeHttpHeaders.__(<String, List<String>>{}),
     );
     return Future.value(response);
   }
@@ -209,11 +209,11 @@ class HttpTestClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> patchUrl(Uri url) {
-    final HttpClientRequest response = HttpTestClientRequest._(
+    final HttpClientRequest response = FakeHttpClientRequest._(
       this,
       'PATCH',
       url,
-      HttpTestHeaders.__(<String, List<String>>{}),
+      FakeHttpHeaders.__(<String, List<String>>{}),
     );
     return Future.value(response);
   }
@@ -225,11 +225,11 @@ class HttpTestClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> postUrl(Uri url) {
-    final HttpClientRequest response = HttpTestClientRequest._(
+    final HttpClientRequest response = FakeHttpClientRequest._(
       this,
       'POST',
       url,
-      HttpTestHeaders.__(<String, List<String>>{}),
+      FakeHttpHeaders.__(<String, List<String>>{}),
     );
     return Future.value(response);
   }
@@ -241,11 +241,11 @@ class HttpTestClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> putUrl(Uri url) {
-    final HttpClientRequest response = HttpTestClientRequest._(
+    final HttpClientRequest response = FakeHttpClientRequest._(
       this,
       'PUT',
       url,
-      HttpTestHeaders.__(<String, List<String>>{}),
+      FakeHttpHeaders.__(<String, List<String>>{}),
     );
     return Future.value(response);
   }
@@ -256,7 +256,7 @@ class HttpTestClient implements HttpClient {
 
 /// A fake [HttpClientResponse] to return in a [RequestCallback].
 ///
-/// A test response can be created with [HttpTestResponse()]. This allows
+/// A test response can be created with [FakeHttpResponse()]. This allows
 /// you to specify the body, [statusCode], and [headers].
 /// Other properties of a [HttpClientResponse] are faked are not currently
 /// customizable:
@@ -270,9 +270,9 @@ class HttpTestClient implements HttpClient {
 ///
 /// See also:
 ///
-///   * [HttpTestClient]
+///   * [FakeHttpClient]
 ///   * [HttpClient]
-class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
+class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   /// Creates a test response.
   ///
   /// The response [body] can be either a `String`, which will be utf8 encoded,
@@ -283,7 +283,7 @@ class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
   ///
   /// [headers] are empty by default.  Multiple header values can be passed
   /// in a comma-separated string.
-  factory HttpTestResponse({
+  factory FakeHttpResponse({
     dynamic body,
     int statusCode = HttpStatus.ok,
     Map<String, String> headers = const <String, String>{},
@@ -296,11 +296,11 @@ class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
     } else {
       codeUnits = body as List<int>;
     }
-    final HttpHeaders testHeaders = HttpTestHeaders._(headers);
-    return HttpTestResponse._(codeUnits, statusCode, testHeaders);
+    final HttpHeaders testHeaders = FakeHttpHeaders._(headers);
+    return FakeHttpResponse._(codeUnits, statusCode, testHeaders);
   }
 
-  HttpTestResponse._(
+  FakeHttpResponse._(
     this._body,
     this._statusCode,
     this._headers,
@@ -376,15 +376,15 @@ class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
 /// See also:
 ///
 ///   * [HttpClientRequest]
-class HttpTestClientRequest extends HttpClientRequest {
-  HttpTestClientRequest._(
+class FakeHttpClientRequest extends HttpClientRequest {
+  FakeHttpClientRequest._(
     this._testClient,
     this.method,
     this.uri,
     this.headers,
   );
 
-  final HttpTestClient _testClient;
+  final FakeHttpClient _testClient;
   final List<int> _buffer = <int>[];
   final List<Future<void>> _pendingWrites = <Future<void>>[];
   final Completer<HttpClientResponse> _onDone =
@@ -446,7 +446,7 @@ class HttpTestClientRequest extends HttpClientRequest {
     }
     await Future.wait(_pendingWrites);
     _isClosed = true;
-    final FutureOr<HttpTestResponse> response =
+    final FutureOr<FakeHttpResponse> response =
         _testClient._requestCallback(this, _testClient);
     _onDone.complete(response);
     return response;
@@ -506,16 +506,16 @@ class HttpTestClientRequest extends HttpClientRequest {
 /// See also:
 ///
 ///   * [HttpHeaders]
-class HttpTestHeaders extends HttpHeaders {
-  factory HttpTestHeaders._(Map<String, String> headers) {
+class FakeHttpHeaders extends HttpHeaders {
+  factory FakeHttpHeaders._(Map<String, String> headers) {
     final Map<String, List<String>> values = <String, List<String>>{};
     headers.forEach((String key, String value) {
       values[key] = value.split(',').map((value) => value.trim()).toList();
     });
-    return HttpTestHeaders.__(values);
+    return FakeHttpHeaders.__(values);
   }
 
-  HttpTestHeaders.__(this._headers);
+  FakeHttpHeaders.__(this._headers);
 
   final Map<String, List<String>> _headers;
 
