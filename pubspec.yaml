@@ -1,11 +1,12 @@
-name: http_test_client
-version: 0.0.1
-author: jonah williams <jonahwilliams@google.com>
-description: A package for testing http clients on flutter or the Dart vm.
-homepage: https://github.com/jonahwilliams/http_test_client
-
-dev_dependencies:
-  test: ^0.12.32
+name: fake_http_client
+version: 0.0.2
+author: Pavel Sulimau <pavel.sulimau@gmail.com>
+description: A package for faking an http client's responses.
+homepage: https://github.com/Pavel-Sulimau/http_test_client
 
 environment:
-  sdk: '>=1.19.0 <2.0.0'
+  sdk: '>=2.9.1 <3.0.0'
+
+dev_dependencies:
+  test: 1.15.7
+

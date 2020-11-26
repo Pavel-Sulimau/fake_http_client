@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:http_test_client/http_test_client.dart';
+import 'package:fake_http_client/http_test_client.dart';
 import 'package:test/test.dart';
 
 class HttpTestOverrides extends HttpOverrides {
@@ -12,16 +12,16 @@ class HttpTestOverrides extends HttpOverrides {
 }
 
 void main() {
-  final HttpTestOverrides overrides = new HttpTestOverrides();
+  final HttpTestOverrides overrides = HttpTestOverrides();
   HttpOverrides.global = overrides;
 
   group(HttpTestClient, () {
     setUp(() {
-      overrides.testClient = new HttpTestClient(
-          (HttpClientRequest request, HttpTestClient client) {
-        return new HttpTestResponse(
+      overrides.testClient =
+          HttpTestClient((HttpClientRequest request, HttpTestClient client) {
+        return HttpTestResponse(
           body: 'Hello World',
-          statusCode: 200,
+          statusCode: HttpStatus.ok,
           headers: {'foo': 'bar'},
         );
       });
@@ -32,14 +32,14 @@ void main() {
     });
 
     test('can be provided using HttpOverrides', () {
-      final HttpClient client = new HttpClient();
+      final HttpClient client = HttpClient();
 
-      expect(client, const isInstanceOf<HttpTestClient>());
+      expect(client, isA<HttpTestClient>());
     });
 
     test('returns a body of "Hello World" and headers', () async {
-      final client = new HttpClient();
-      final request = await client.getUrl(new Uri.https('google.com', '/'));
+      final client = HttpClient();
+      final request = await client.getUrl(Uri.https('google.com', '/'));
       final response = await request.close();
       final body = await response.transform(utf8.decoder).join();
 
@@ -51,8 +51,8 @@ void main() {
       HttpHeaders headers;
 
       setUp(() async {
-        final client = new HttpClient();
-        final request = await client.getUrl(new Uri.https('google.com', '/'));
+        final client = HttpClient();
+        final request = await client.getUrl(Uri.https('google.com', '/'));
         headers = request.headers;
       });
 
@@ -73,8 +73,7 @@ void main() {
       test('throws if headers.value has more than one entry', () {
         headers..add('foo', 'bar')..add('foo', 'class');
 
-        expect(() => headers.value('foo'),
-            throwsA(const isInstanceOf<StateError>()));
+        expect(() => headers.value('foo'), throwsA(isA<StateError>()));
       });
     });
   });

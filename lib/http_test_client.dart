@@ -42,8 +42,8 @@ typedef FindProxyCallback = String Function(Uri);
 /// A fake [HttpClient] for testing Flutter or Dart VM applications.
 ///
 /// Using [HttpOverrides.global] and an [HttpTestClient], you can test code which
-/// uses [new HttpClient()] without dependency injection. All you need to do
-/// is create a new test client and specify how you want it to respond using a
+/// uses [HttpClient()] without dependency injection. All you need to do
+/// is create a test client and specify how you want it to respond using a
 /// [RequestCallback].
 ///
 /// Currently the test client only supports the following HTTP methods:
@@ -66,21 +66,21 @@ typedef FindProxyCallback = String Function(Uri);
 ///
 ///     class MyHttpOverrides extends HttpOverrides {
 ///       HttpClient() createClient(_) {
-///         return new HttpTestClient((HttpRequest request, HttpTestClient client) {
-///           return new HttpTestResponse();
+///         return HttpTestClient((HttpRequest request, HttpTestClient client) {
+///           return HttpTestResponse();
 ///         });
 ///       }
 ///     }
 ///
 ///     void main() {
 ///       // overrides all HttpClients.
-///       HttpOverrides.global = new MyHttpOverrides();
+///       HttpOverrides.global = MyHttpOverrides();
 ///
 ///       group('Widget tests', () {
 ///         test('returns 200', () async {
 ///            // this is actually an instance of [HttpTestClient].
-///            final client = new HttpClient();
-///            final request = client.getUrl(new Uri.https('google.com'));
+///            final client = HttpClient();
+///            final request = client.getUrl(Uri.https('google.com'));
 ///            final response = await request.close();
 ///
 ///            expect(response.statusCode, HttpStatus.OK);
@@ -135,125 +135,128 @@ class HttpTestClient implements HttpClient {
   BadCertificateCallback badCertificateCallback;
 
   @override
-  void close({bool force: false}) {}
+  void close({bool force = false}) {}
 
   @override
   Future<HttpClientRequest> delete(String host, int port, String path) {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
 
   @override
   Future<HttpClientRequest> deleteUrl(Uri url) {
-    final HttpClientRequest response = new HttpTestClientRequest._(
+    final HttpClientRequest response = HttpTestClientRequest._(
       this,
       'DELETE',
       url,
-      new HttpTestHeaders.__(<String, List<String>>{}),
+      HttpTestHeaders.__(<String, List<String>>{}),
     );
-    return new Future.value(response);
+    return Future.value(response);
   }
 
   @override
   Future<HttpClientRequest> get(String host, int port, String path) {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
 
   @override
   Future<HttpClientRequest> getUrl(Uri url) {
-    final HttpClientRequest response = new HttpTestClientRequest._(
+    final HttpClientRequest response = HttpTestClientRequest._(
       this,
       'GET',
       url,
-      new HttpTestHeaders.__(<String, List<String>>{}),
+      HttpTestHeaders.__(<String, List<String>>{}),
     );
-    return new Future.value(response);
+    return Future.value(response);
   }
 
   @override
   Future<HttpClientRequest> head(String host, int port, String path) {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
 
   @override
   Future<HttpClientRequest> headUrl(Uri url) {
-    final HttpClientRequest response = new HttpTestClientRequest._(
+    final HttpClientRequest response = HttpTestClientRequest._(
       this,
       'HEAD',
       url,
-      new HttpTestHeaders.__(<String, List<String>>{}),
+      HttpTestHeaders.__(<String, List<String>>{}),
     );
-    return new Future.value(response);
+    return Future.value(response);
   }
 
   @override
   Future<HttpClientRequest> open(
       String method, String host, int port, String path) {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
 
   @override
   Future<HttpClientRequest> openUrl(String method, Uri url) {
-    final HttpClientRequest response = new HttpTestClientRequest._(
+    final HttpClientRequest response = HttpTestClientRequest._(
       this,
       method.toUpperCase(),
       url,
-      new HttpTestHeaders.__(<String, List<String>>{}),
+      HttpTestHeaders.__(<String, List<String>>{}),
     );
-    return new Future.value(response);
+    return Future.value(response);
   }
 
   @override
   Future<HttpClientRequest> patch(String host, int port, String path) {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
 
   @override
   Future<HttpClientRequest> patchUrl(Uri url) {
-    final HttpClientRequest response = new HttpTestClientRequest._(
+    final HttpClientRequest response = HttpTestClientRequest._(
       this,
       'PATCH',
       url,
-      new HttpTestHeaders.__(<String, List<String>>{}),
+      HttpTestHeaders.__(<String, List<String>>{}),
     );
-    return new Future.value(response);
+    return Future.value(response);
   }
 
   @override
   Future<HttpClientRequest> post(String host, int port, String path) {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
 
   @override
   Future<HttpClientRequest> postUrl(Uri url) {
-    final HttpClientRequest response = new HttpTestClientRequest._(
+    final HttpClientRequest response = HttpTestClientRequest._(
       this,
       'POST',
       url,
-      new HttpTestHeaders.__(<String, List<String>>{}),
+      HttpTestHeaders.__(<String, List<String>>{}),
     );
-    return new Future.value(response);
+    return Future.value(response);
   }
 
   @override
   Future<HttpClientRequest> put(String host, int port, String path) {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
 
   @override
   Future<HttpClientRequest> putUrl(Uri url) {
-    final HttpClientRequest response = new HttpTestClientRequest._(
+    final HttpClientRequest response = HttpTestClientRequest._(
       this,
       'PUT',
       url,
-      new HttpTestHeaders.__(<String, List<String>>{}),
+      HttpTestHeaders.__(<String, List<String>>{}),
     );
-    return new Future.value(response);
+    return Future.value(response);
   }
+
+  @override
+  Duration connectionTimeout;
 }
 
 /// A fake [HttpClientResponse] to return in a [RequestCallback].
 ///
-/// A test response can be created with [new HttpTestResponse()]. This allows
+/// A test response can be created with [HttpTestResponse()]. This allows
 /// you to specify the body, [statusCode], and [headers].
 /// Other properties of a [HttpClientResponse] are faked are not currently
 /// customizable:
@@ -270,19 +273,19 @@ class HttpTestClient implements HttpClient {
 ///   * [HttpTestClient]
 ///   * [HttpClient]
 class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
-  /// Creates a new test response.
+  /// Creates a test response.
   ///
   /// The response [body] can be either a `String`, which will be utf8 encoded,
   /// or a `List<int>` - including `Uint8List` and other typed data objects.
   /// It defaults to the empty string, and will never be `null`;
   ///
-  /// The [statusCode] defaults to [HttpStatus.OK].
+  /// The [statusCode] defaults to [HttpStatus.Ok].
   ///
   /// [headers] are empty by default.  Multiple header values can be passed
   /// in a comma-separated string.
   factory HttpTestResponse({
     dynamic body,
-    int statusCode = HttpStatus.OK,
+    int statusCode = HttpStatus.ok,
     Map<String, String> headers = const <String, String>{},
   }) {
     body ??= '';
@@ -293,8 +296,8 @@ class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
     } else {
       codeUnits = body as List<int>;
     }
-    final HttpHeaders testHeaders = new HttpTestHeaders._(headers);
-    return new HttpTestResponse._(codeUnits, statusCode, testHeaders);
+    final HttpHeaders testHeaders = HttpTestHeaders._(headers);
+    return HttpTestResponse._(codeUnits, statusCode, testHeaders);
   }
 
   HttpTestResponse._(
@@ -327,7 +330,7 @@ class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
 
   @override
   Future<Socket> detachSocket() {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
 
   @override
@@ -339,8 +342,8 @@ class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
   @override
   StreamSubscription<List<int>> listen(void Function(List<int> event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
-    return new Stream<List<int>>.fromIterable(
-        <List<int>>[_body ?? const <int>[]]).listen(
+    return Stream<List<int>>.fromIterable(<List<int>>[_body ?? const <int>[]])
+        .listen(
       onData,
       onError: onError,
       onDone: onDone,
@@ -357,8 +360,12 @@ class HttpTestResponse extends Stream<List<int>> implements HttpClientResponse {
   @override
   Future<HttpClientResponse> redirect(
       [String method, Uri url, bool followLoops]) {
-    throw new UnsupportedError('');
+    throw UnsupportedError('');
   }
+
+  @override
+  HttpClientResponseCompressionState get compressionState =>
+      throw UnimplementedError();
 }
 
 /// A fake implementation of [HttpClientRequest].
@@ -381,7 +388,7 @@ class HttpTestClientRequest extends HttpClientRequest {
   final List<int> _buffer = <int>[];
   final List<Future<void>> _pendingWrites = <Future<void>>[];
   final Completer<HttpClientResponse> _onDone =
-      new Completer<HttpClientResponse>.sync();
+      Completer<HttpClientResponse>.sync();
   bool _isClosed = false;
 
   @override
@@ -405,24 +412,24 @@ class HttpTestClientRequest extends HttpClientRequest {
   @override
   void add(List<int> data) {
     if (_isClosed) {
-      throw new StateError('writing to a closed HttpRequest');
+      throw StateError('writing to a closed HttpRequest');
     }
     _buffer.addAll(data);
   }
 
   @override
-  void addError(error, [StackTrace stackTrace]) {
+  void addError(Object error, [StackTrace stackTrace]) {
     if (_isClosed) {
-      throw new StateError('writing to a closed HttpRequest');
+      throw StateError('writing to a closed HttpRequest');
     }
   }
 
   @override
   Future<void> addStream(Stream<List<int>> stream) {
     if (_isClosed) {
-      throw new StateError('writing to a closed HttpRequest');
+      throw StateError('writing to a closed HttpRequest');
     }
-    final Completer<void> completer = new Completer<void>.sync();
+    final Completer<void> completer = Completer<void>.sync();
     stream.listen(
       (List<int> data) => _buffer.addAll(data),
       onDone: completer.complete,
@@ -435,11 +442,11 @@ class HttpTestClientRequest extends HttpClientRequest {
   @override
   Future<HttpClientResponse> close() async {
     if (_isClosed) {
-      throw new StateError('writing to a closed HttpRequest');
+      throw StateError('writing to a closed HttpRequest');
     }
     await Future.wait(_pendingWrites);
     _isClosed = true;
-    final HttpTestResponse response =
+    final FutureOr<HttpTestResponse> response =
         _testClient._requestCallback(this, _testClient);
     _onDone.complete(response);
     return response;
@@ -451,13 +458,13 @@ class HttpTestClientRequest extends HttpClientRequest {
   @override
   Future<void> flush() async {
     await Future.wait(_pendingWrites);
-    return null;
+    return;
   }
 
   @override
   void write(Object obj) {
     if (_isClosed) {
-      throw new StateError('writing to a closed HttpRequest');
+      throw StateError('writing to a closed HttpRequest');
     }
     final List<int> codeUnits = encoding.encode(obj.toString());
     _buffer.addAll(codeUnits);
@@ -465,7 +472,7 @@ class HttpTestClientRequest extends HttpClientRequest {
 
   @override
   void writeAll(Iterable<Object> objects, [String separator = '']) {
-    for (Object object in objects) {
+    for (final object in objects) {
       write(object);
     }
   }
@@ -473,7 +480,7 @@ class HttpTestClientRequest extends HttpClientRequest {
   @override
   void writeCharCode(int charCode) {
     if (_isClosed) {
-      throw new StateError('writing to a closed HttpRequest');
+      throw StateError('writing to a closed HttpRequest');
     }
     _buffer.add(charCode);
   }
@@ -481,11 +488,14 @@ class HttpTestClientRequest extends HttpClientRequest {
   @override
   void writeln([Object obj = '']) {
     if (_isClosed) {
-      throw new StateError('writing to a closed HttpRequest');
+      throw StateError('writing to a closed HttpRequest');
     }
     write(obj);
     write('\n');
   }
+
+  @override
+  void abort([Object exception, StackTrace stackTrace]) {}
 }
 
 /// A fake implementation of [HttpHeaders].
@@ -500,9 +510,9 @@ class HttpTestHeaders extends HttpHeaders {
   factory HttpTestHeaders._(Map<String, String> headers) {
     final Map<String, List<String>> values = <String, List<String>>{};
     headers.forEach((String key, String value) {
-      values[key] = value.split(',').map((value) => value.trim());
+      values[key] = value.split(',').map((value) => value.trim()).toList();
     });
-    return new HttpTestHeaders.__(values);
+    return HttpTestHeaders.__(values);
   }
 
   HttpTestHeaders.__(this._headers);
@@ -515,7 +525,7 @@ class HttpTestHeaders extends HttpHeaders {
   }
 
   @override
-  void add(String name, Object value) {
+  void add(String name, Object value, {bool preserveHeaderCase = false}) {
     _headers.putIfAbsent(name, () => <String>[]).add(value.toString());
   }
 
@@ -543,7 +553,7 @@ class HttpTestHeaders extends HttpHeaders {
   }
 
   @override
-  void set(String name, Object value) {
+  void set(String name, Object value, {bool preserveHeaderCase = false}) {
     _headers[name] = <String>[value.toString()];
   }
 
