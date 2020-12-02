@@ -4,7 +4,7 @@ import 'dart:io';
 
 /// Fakes a server response for the [FakeHttpClient].
 typedef RequestCallback = FutureOr<FakeHttpResponse> Function(
-    HttpClientRequest, FakeHttpClient);
+    FakeHttpClientRequest, FakeHttpClient);
 
 /// A callback to simulate authentication.
 ///
@@ -287,6 +287,8 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
     dynamic body,
     int statusCode = HttpStatus.ok,
     Map<String, String> headers = const <String, String>{},
+    HttpClientResponseCompressionState compressionState =
+        HttpClientResponseCompressionState.notCompressed,
   }) {
     body ??= '';
     assert(body is String || body is List<int>);
@@ -297,18 +299,21 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
       codeUnits = body as List<int>;
     }
     final HttpHeaders testHeaders = FakeHttpHeaders._(headers);
-    return FakeHttpResponse._(codeUnits, statusCode, testHeaders);
+    return FakeHttpResponse._(
+        codeUnits, statusCode, testHeaders, compressionState);
   }
 
   FakeHttpResponse._(
     this._body,
     this._statusCode,
     this._headers,
+    this._compressionState,
   );
 
   final List<int> _body;
   final int _statusCode;
   final HttpHeaders _headers;
+  final HttpClientResponseCompressionState _compressionState;
 
   @override
   final List<RedirectInfo> redirects = <RedirectInfo>[];
@@ -364,8 +369,7 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   }
 
   @override
-  HttpClientResponseCompressionState get compressionState =>
-      throw UnimplementedError();
+  HttpClientResponseCompressionState get compressionState => _compressionState;
 }
 
 /// A fake implementation of [HttpClientRequest].
@@ -385,11 +389,13 @@ class FakeHttpClientRequest extends HttpClientRequest {
   );
 
   final FakeHttpClient _testClient;
-  final List<int> _buffer = <int>[];
+  final List<int> _contentBuffer = <int>[];
   final List<Future<void>> _pendingWrites = <Future<void>>[];
   final Completer<HttpClientResponse> _onDone =
       Completer<HttpClientResponse>.sync();
   bool _isClosed = false;
+
+  String get bodyText => encoding.decode(_contentBuffer);
 
   @override
   Encoding encoding = utf8;
@@ -414,7 +420,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
     if (_isClosed) {
       throw StateError('writing to a closed HttpRequest');
     }
-    _buffer.addAll(data);
+    _contentBuffer.addAll(data);
   }
 
   @override
@@ -431,7 +437,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
     }
     final Completer<void> completer = Completer<void>.sync();
     stream.listen(
-      (List<int> data) => _buffer.addAll(data),
+      (List<int> data) => _contentBuffer.addAll(data),
       onDone: completer.complete,
       cancelOnError: true,
     );
@@ -458,7 +464,6 @@ class FakeHttpClientRequest extends HttpClientRequest {
   @override
   Future<void> flush() async {
     await Future.wait(_pendingWrites);
-    return;
   }
 
   @override
@@ -467,7 +472,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
       throw StateError('writing to a closed HttpRequest');
     }
     final List<int> codeUnits = encoding.encode(obj.toString());
-    _buffer.addAll(codeUnits);
+    _contentBuffer.addAll(codeUnits);
   }
 
   @override
@@ -482,7 +487,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
     if (_isClosed) {
       throw StateError('writing to a closed HttpRequest');
     }
-    _buffer.add(charCode);
+    _contentBuffer.add(charCode);
   }
 
   @override

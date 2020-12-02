@@ -9,3 +9,4 @@ environment:
 
 dev_dependencies:
   test: 1.15.7
+  http: 0.12.2

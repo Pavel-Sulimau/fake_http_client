@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fake_http_client/fake_http_client.dart';
+import 'package:http/io_client.dart';
 import 'package:test/test.dart';
 
 class HttpTestOverrides extends HttpOverrides {
@@ -45,6 +46,48 @@ void main() {
 
       expect(body, 'Hello World');
       expect(response.headers.value('foo'), 'bar');
+    });
+
+    test('post request body can be obtained in request callback', () async {
+      const expectedPostRequestBody = 'Convey my regards!';
+      String actualPostRequestBody;
+
+      final fakeHttpClient = FakeHttpClient(
+          (FakeHttpClientRequest request, FakeHttpClient client) {
+        actualPostRequestBody = request.bodyText;
+        return FakeHttpResponse(
+          body: 'Hey',
+          statusCode: HttpStatus.ok,
+        );
+      });
+
+      final ioClient = IOClient(fakeHttpClient);
+      final response = await ioClient.post(
+        'https://smth.com/comments',
+        body: expectedPostRequestBody,
+      );
+
+      expect(actualPostRequestBody, expectedPostRequestBody);
+      expect(response.statusCode, HttpStatus.ok);
+    });
+
+    test('get request body is empty in request callback', () async {
+      String actualPostRequestBody;
+
+      final fakeHttpClient = FakeHttpClient(
+          (FakeHttpClientRequest request, FakeHttpClient client) {
+        actualPostRequestBody = request.bodyText;
+        return FakeHttpResponse(
+          body: 'Hey',
+          statusCode: HttpStatus.ok,
+        );
+      });
+
+      final ioClient = IOClient(fakeHttpClient);
+      final response = await ioClient.get('https://smth.com/comments/1');
+
+      expect(actualPostRequestBody, '');
+      expect(response.statusCode, HttpStatus.ok);
     });
 
     group(FakeHttpHeaders, () {
