@@ -1,13 +1,13 @@
-# See https://www.dartlang.org/tools/private-files.html
-
 # Files and directories created by pub
-.packages
-.pub/
 .dart_tool/
-build/
-# If you're building an application, you may want to check-in your pubspec.lock
+.packages
+
+# Omit commiting pubspec.lock for library packages:
+# https://dart.dev/guides/libraries/private-files#pubspeclock
 pubspec.lock
 
+# Conventional directory for build outputs
+build/
+
 # Directory created by dartdoc
-# If you don't generate documentation locally you can remove this line.
 doc/api/
