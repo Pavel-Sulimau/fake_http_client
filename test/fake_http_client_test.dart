@@ -51,8 +51,7 @@ void main() {
       const expectedPostRequestBody = 'Convey my regards!';
       String actualPostRequestBody;
 
-      final fakeHttpClient = FakeHttpClient(
-          (FakeHttpClientRequest request, FakeHttpClient client) {
+      final fakeHttpClient = FakeHttpClient((FakeHttpClientRequest request, FakeHttpClient client) {
         actualPostRequestBody = request.bodyText;
         return FakeHttpResponse(
           body: 'Hey',
@@ -73,8 +72,7 @@ void main() {
     test('get request body is empty in request callback', () async {
       String actualPostRequestBody;
 
-      final fakeHttpClient = FakeHttpClient(
-          (FakeHttpClientRequest request, FakeHttpClient client) {
+      final fakeHttpClient = FakeHttpClient((FakeHttpClientRequest request, FakeHttpClient client) {
         actualPostRequestBody = request.bodyText;
         return FakeHttpResponse(
           body: 'Hey',
@@ -119,4 +117,31 @@ void main() {
       });
     });
   });
+
+  group('HttpClient', () {
+    setUp(() {
+      // Overrides all HttpClients.
+      HttpOverrides.global = _EmptyResponseHttpOverrides();
+    });
+
+    test('returns faked OK empty response for non-existing website', () async {
+      // This is actually an instance of [FakeHttpClient].
+      final client = HttpClient();
+      final request = await client.getUrl(Uri.parse('https://non-existing-site.com'));
+      final response = await request.close();
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(response.contentLength, 0);
+    });
+  });
+}
+
+class _EmptyResponseHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(_) {
+    return FakeHttpClient((request, client) {
+      // The default response is an empty 200.
+      return FakeHttpResponse();
+    });
+  }
 }

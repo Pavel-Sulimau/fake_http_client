@@ -6,12 +6,12 @@ The following example forces all HTTP requests to return a
 successful empty response in a test environment.  No actual HTTP requests will be performed.
 
 ```dart
-class MyHttpOverrides extends HttpOverrides {
+class _EmptyResponseHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(_) {
     return FakeHttpClient((request, client) {
-        // the default response is an empty 200.
-        return HttpTestResponse();
+      // The default response is an empty 200.
+      return FakeHttpResponse();
     });
   }
 }
@@ -19,17 +19,18 @@ class MyHttpOverrides extends HttpOverrides {
 void main() {
   group('HttpClient', () {
     setUp(() {
-      // overrides all HttpClients.
-      HttpOverrides.global = MyHttpOverrides();
+      // Overrides all HttpClients.
+      HttpOverrides.global = _EmptyResponseHttpOverrides();
     });
 
-    test('returns OK', () async {
-      // this is actually an instance of [FakeHttpClient].
+    test('returns faked OK empty response for non-existing website', () async {
+      // This is actually an instance of [FakeHttpClient].
       final client = HttpClient();
-      final request = client.getUrl(Uri.https('google.com'));
+      final request = await client.getUrl(Uri.parse('https://non-existing-site.com'));
       final response = await request.close();
 
       expect(response.statusCode, HttpStatus.ok);
+      expect(response.contentLength, 0);
     });
   });
 }

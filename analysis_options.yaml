@@ -753,7 +753,7 @@ linter:
     #
     # pedantic: enabled
     # https://dart-lang.github.io/linter/lints/unawaited_futures.html
-    # - unawaited_futures
+    - unawaited_futures
 
     # Remove async/await clutter when not required
     # https://dart-lang.github.io/linter/lints/unnecessary_await_in_return.html
