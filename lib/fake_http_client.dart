@@ -300,7 +300,11 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
     }
     final HttpHeaders testHeaders = FakeHttpHeaders._(headers);
     return FakeHttpResponse._(
-        codeUnits, statusCode, testHeaders, compressionState);
+      codeUnits,
+      statusCode,
+      testHeaders,
+      compressionState,
+    );
   }
 
   FakeHttpResponse._(

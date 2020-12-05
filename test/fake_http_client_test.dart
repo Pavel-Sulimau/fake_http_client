@@ -5,20 +5,19 @@ import 'package:fake_http_client/fake_http_client.dart';
 import 'package:http/io_client.dart';
 import 'package:test/test.dart';
 
-class HttpTestOverrides extends HttpOverrides {
+class _HttpTestOverrides extends HttpOverrides {
   FakeHttpClient fakeHttpClient;
-
   @override
   HttpClient createHttpClient(SecurityContext context) => fakeHttpClient;
 }
 
 void main() {
-  final HttpTestOverrides overrides = HttpTestOverrides();
-  HttpOverrides.global = overrides;
+  final _HttpTestOverrides _httpOverrides = _HttpTestOverrides();
+  HttpOverrides.global = _httpOverrides;
 
   group(FakeHttpClient, () {
     setUp(() {
-      overrides.fakeHttpClient =
+      _httpOverrides.fakeHttpClient =
           FakeHttpClient((HttpClientRequest request, FakeHttpClient client) {
         return FakeHttpResponse(
           body: 'Hello World',
@@ -29,7 +28,7 @@ void main() {
     });
 
     tearDown(() {
-      overrides.fakeHttpClient = null;
+      _httpOverrides.fakeHttpClient = null;
     });
 
     test('can be provided using HttpOverrides', () {
