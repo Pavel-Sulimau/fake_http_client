@@ -1,5 +1,7 @@
 # fake_http_client
-A package for faking Dart HttpClient's responses.
+A package for faking Dart/Flutter HttpClient's responses.
+
+It is handy for integration tests. Also it may help a lot during app development with an unstable back-end.
 
 ## Example
 The following example forces all HTTP requests to return a
