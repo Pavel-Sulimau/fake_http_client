@@ -51,7 +51,8 @@ void main() {
       const expectedPostRequestBody = 'Convey my regards!';
       String actualPostRequestBody;
 
-      final fakeHttpClient = FakeHttpClient((FakeHttpClientRequest request, FakeHttpClient client) {
+      final fakeHttpClient = FakeHttpClient(
+          (FakeHttpClientRequest request, FakeHttpClient client) {
         actualPostRequestBody = request.bodyText;
         return FakeHttpResponse(
           body: 'Hey',
@@ -72,7 +73,10 @@ void main() {
     test('get request body is empty in request callback', () async {
       String actualPostRequestBody;
 
-      final fakeHttpClient = FakeHttpClient((FakeHttpClientRequest request, FakeHttpClient client) {
+      final fakeHttpClient = FakeHttpClient((
+        FakeHttpClientRequest request,
+        FakeHttpClient client,
+      ) {
         actualPostRequestBody = request.bodyText;
         return FakeHttpResponse(
           body: 'Hey',
@@ -127,7 +131,9 @@ void main() {
     test('returns faked OK empty response for non-existing website', () async {
       // This is actually an instance of [FakeHttpClient].
       final client = HttpClient();
-      final request = await client.getUrl(Uri.parse('https://non-existing-site.com'));
+      final request = await client.getUrl(
+        Uri.parse('https://non-existing-site.com'),
+      );
       final response = await request.close();
 
       expect(response.statusCode, HttpStatus.ok);

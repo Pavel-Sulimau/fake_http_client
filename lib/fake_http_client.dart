@@ -20,7 +20,8 @@ typedef AuthenticateCallback = Future<bool> Function(Uri, String, String);
 ///
 /// This is not invoked automatically be the test client if set, but
 /// it can be accessed in the [RequestCallback] method.
-typedef AuthenticateProxyCallback = Future<bool> Function(String, int, String, String);
+typedef AuthenticateProxyCallback = Future<bool> Function(
+    String, int, String, String);
 
 /// A callback to simulate a bad certificate.
 ///
@@ -114,7 +115,11 @@ class FakeHttpClient implements HttpClient {
   String userAgent;
 
   @override
-  void addCredentials(Uri url, String realm, HttpClientCredentials credentials) {}
+  void addCredentials(
+    Uri url,
+    String realm,
+    HttpClientCredentials credentials,
+  ) {}
 
   @override
   void addProxyCredentials(
@@ -184,7 +189,12 @@ class FakeHttpClient implements HttpClient {
   }
 
   @override
-  Future<HttpClientRequest> open(String method, String host, int port, String path) {
+  Future<HttpClientRequest> open(
+    String method,
+    String host,
+    int port,
+    String path,
+  ) {
     throw UnsupportedError('');
   }
 
@@ -348,7 +358,8 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   @override
   StreamSubscription<List<int>> listen(void Function(List<int> event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
-    return Stream<List<int>>.fromIterable(<List<int>>[_body ?? const <int>[]]).listen(
+    return Stream<List<int>>.fromIterable(<List<int>>[_body ?? const <int>[]])
+        .listen(
       onData,
       onError: onError,
       onDone: onDone,
@@ -363,7 +374,8 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   String get reasonPhrase => null;
 
   @override
-  Future<HttpClientResponse> redirect([String method, Uri url, bool followLoops]) {
+  Future<HttpClientResponse> redirect(
+      [String method, Uri url, bool followLoops]) {
     throw UnsupportedError('');
   }
 
@@ -390,7 +402,8 @@ class FakeHttpClientRequest extends HttpClientRequest {
   final FakeHttpClient _testClient;
   final List<int> _contentBuffer = <int>[];
   final List<Future<void>> _pendingWrites = <Future<void>>[];
-  final Completer<HttpClientResponse> _onDone = Completer<HttpClientResponse>.sync();
+  final Completer<HttpClientResponse> _onDone =
+      Completer<HttpClientResponse>.sync();
   bool _isClosed = false;
 
   String get bodyText => encoding.decode(_contentBuffer);
@@ -450,7 +463,8 @@ class FakeHttpClientRequest extends HttpClientRequest {
     }
     await Future.wait(_pendingWrites);
     _isClosed = true;
-    final FutureOr<FakeHttpResponse> response = _testClient._requestCallback(this, _testClient);
+    final FutureOr<FakeHttpResponse> response =
+        _testClient._requestCallback(this, _testClient);
     _onDone.complete(response);
     return response;
   }
