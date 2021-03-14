@@ -6,9 +6,9 @@ import 'package:http/io_client.dart';
 import 'package:test/test.dart';
 
 class _HttpTestOverrides extends HttpOverrides {
-  FakeHttpClient fakeHttpClient;
+  FakeHttpClient? fakeHttpClient;
   @override
-  HttpClient createHttpClient(SecurityContext context) => fakeHttpClient;
+  HttpClient createHttpClient(SecurityContext? context) => fakeHttpClient!;
 }
 
 void main() {
@@ -49,7 +49,7 @@ void main() {
 
     test('post request body can be obtained in request callback', () async {
       const expectedPostRequestBody = 'Convey my regards!';
-      String actualPostRequestBody;
+      String? actualPostRequestBody;
 
       final fakeHttpClient = FakeHttpClient(
           (FakeHttpClientRequest request, FakeHttpClient client) {
@@ -62,7 +62,7 @@ void main() {
 
       final ioClient = IOClient(fakeHttpClient);
       final response = await ioClient.post(
-        'https://smth.com/comments',
+        Uri.parse('https://smth.com/comments'),
         body: expectedPostRequestBody,
       );
 
@@ -71,7 +71,7 @@ void main() {
     });
 
     test('get request body is empty in request callback', () async {
-      String actualPostRequestBody;
+      String? actualPostRequestBody;
 
       final fakeHttpClient = FakeHttpClient((
         FakeHttpClientRequest request,
@@ -85,23 +85,20 @@ void main() {
       });
 
       final ioClient = IOClient(fakeHttpClient);
-      final response = await ioClient.get('https://smth.com/comments/1');
+      final response =
+          await ioClient.get(Uri.parse('https://smth.com/comments/1'));
 
       expect(actualPostRequestBody, '');
       expect(response.statusCode, HttpStatus.ok);
     });
 
     group(FakeHttpHeaders, () {
-      HttpHeaders headers;
+      late HttpHeaders headers;
 
       setUp(() async {
         final client = HttpClient();
         final request = await client.getUrl(Uri.https('google.com', '/'));
         headers = request.headers;
-      });
-
-      tearDown(() {
-        headers = null;
       });
 
       test('return the value if headers.value has one entry', () {

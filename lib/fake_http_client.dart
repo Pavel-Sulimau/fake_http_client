@@ -103,16 +103,16 @@ class FakeHttpClient implements HttpClient {
   final RequestCallback _requestCallback;
 
   @override
-  bool autoUncompress;
+  late bool autoUncompress;
 
   @override
-  Duration idleTimeout;
+  late Duration idleTimeout;
 
   @override
-  int maxConnectionsPerHost;
+  int? maxConnectionsPerHost;
 
   @override
-  String userAgent;
+  String? userAgent;
 
   @override
   void addCredentials(
@@ -126,16 +126,16 @@ class FakeHttpClient implements HttpClient {
       String host, int port, String realm, HttpClientCredentials credentials) {}
 
   @override
-  AuthenticateCallback authenticate;
+  AuthenticateCallback? authenticate;
 
   @override
-  AuthenticateProxyCallback authenticateProxy;
+  AuthenticateProxyCallback? authenticateProxy;
 
   @override
-  FindProxyCallback findProxy;
+  FindProxyCallback? findProxy;
 
   @override
-  BadCertificateCallback badCertificateCallback;
+  BadCertificateCallback? badCertificateCallback;
 
   @override
   void close({bool force = false}) {}
@@ -258,7 +258,7 @@ class FakeHttpClient implements HttpClient {
   }
 
   @override
-  Duration connectionTimeout;
+  Duration? connectionTimeout;
 }
 
 /// A fake [HttpClientResponse] to return in a [RequestCallback].
@@ -336,13 +336,13 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   int get statusCode => _statusCode;
 
   @override
-  X509Certificate get certificate => null;
+  X509Certificate? get certificate => null;
 
   @override
-  HttpConnectionInfo get connectionInfo => null;
+  HttpConnectionInfo? get connectionInfo => null;
 
   @override
-  int get contentLength => _body?.length ?? -1;
+  int get contentLength => _body.length;
 
   @override
   Future<Socket> detachSocket() {
@@ -356,10 +356,13 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   bool get isRedirect => false;
 
   @override
-  StreamSubscription<List<int>> listen(void Function(List<int> event) onData,
-      {Function onError, void Function() onDone, bool cancelOnError}) {
-    return Stream<List<int>>.fromIterable(<List<int>>[_body ?? const <int>[]])
-        .listen(
+  StreamSubscription<List<int>> listen(
+    void Function(List<int> event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    return Stream<List<int>>.fromIterable(<List<int>>[_body]).listen(
       onData,
       onError: onError,
       onDone: onDone,
@@ -371,11 +374,11 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   bool get persistentConnection => false;
 
   @override
-  String get reasonPhrase => null;
+  String get reasonPhrase => '';
 
   @override
   Future<HttpClientResponse> redirect(
-      [String method, Uri url, bool followLoops]) {
+      [String? method, Uri? url, bool? followLoops]) {
     throw UnsupportedError('');
   }
 
@@ -421,7 +424,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
   final HttpHeaders headers;
 
   @override
-  final HttpConnectionInfo connectionInfo = null;
+  final HttpConnectionInfo? connectionInfo = null;
 
   @override
   final List<Cookie> cookies = <Cookie>[];
@@ -435,7 +438,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
   }
 
   @override
-  void addError(Object error, [StackTrace stackTrace]) {
+  void addError(Object error, [StackTrace? stackTrace]) {
     if (_isClosed) {
       throw StateError('writing to a closed HttpRequest');
     }
@@ -478,7 +481,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
   }
 
   @override
-  void write(Object obj) {
+  void write(Object? obj) {
     if (_isClosed) {
       throw StateError('writing to a closed HttpRequest');
     }
@@ -487,7 +490,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
   }
 
   @override
-  void writeAll(Iterable<Object> objects, [String separator = '']) {
+  void writeAll(Iterable<Object?> objects, [String separator = '']) {
     for (final object in objects) {
       write(object);
     }
@@ -502,7 +505,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
   }
 
   @override
-  void writeln([Object obj = '']) {
+  void writeln([Object? obj = '']) {
     if (_isClosed) {
       throw StateError('writing to a closed HttpRequest');
     }
@@ -511,7 +514,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
   }
 
   @override
-  void abort([Object exception, StackTrace stackTrace]) {}
+  void abort([Object? exception, StackTrace? stackTrace]) {}
 }
 
 /// A fake implementation of [HttpHeaders].
@@ -536,7 +539,7 @@ class FakeHttpHeaders extends HttpHeaders {
   final Map<String, List<String>> _headers;
 
   @override
-  List<String> operator [](String name) {
+  List<String>? operator [](String name) {
     return _headers[name];
   }
 
@@ -574,8 +577,8 @@ class FakeHttpHeaders extends HttpHeaders {
   }
 
   @override
-  String value(String name) {
-    final List<String> values = _headers[name];
+  String? value(String name) {
+    final List<String>? values = _headers[name];
     if (values == null) {
       return null;
     }
