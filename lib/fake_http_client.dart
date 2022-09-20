@@ -259,6 +259,16 @@ class FakeHttpClient implements HttpClient {
 
   @override
   Duration? connectionTimeout;
+
+  @override
+  set connectionFactory(
+    Future<ConnectionTask<Socket>> Function(
+            Uri url, String? proxyHost, int? proxyPort)?
+        f,
+  ) {}
+
+  @override
+  set keyLog(Function(String line)? callback) {}
 }
 
 /// A fake [HttpClientResponse] to return in a [RequestCallback].

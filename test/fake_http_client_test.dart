@@ -112,7 +112,9 @@ void main() {
       });
 
       test('throws if headers.value has more than one entry', () {
-        headers..add('foo', 'bar')..add('foo', 'class');
+        headers
+          ..add('foo', 'bar')
+          ..add('foo', 'class');
 
         expect(() => headers.value('foo'), throwsA(isA<StateError>()));
       });

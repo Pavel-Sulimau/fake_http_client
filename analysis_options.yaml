@@ -206,7 +206,7 @@ linter:
 
     # Prevents logical inconsistencies. It's good practice to define getters for all existing setters.
     # https://dart-lang.github.io/linter/lints/avoid_setters_without_getters.html
-    - avoid_setters_without_getters
+    # - avoid_setters_without_getters
 
     # Don't reuse a type parameter when on with the same name already exists in the same scope
     # pedantic: enabled
