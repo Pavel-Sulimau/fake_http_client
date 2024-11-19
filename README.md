@@ -1,21 +1,21 @@
 # fake_http_client
+
 A package for faking Dart/Flutter HttpClient's responses.
 
 It is handy for integration tests. Also it may help a lot during app development with an unstable back-end.
 
 ## Example
+
 The following example forces all HTTP requests to return a
 successful empty response in a test environment.  No actual HTTP requests will be performed.
 
 ```dart
 class _EmptyResponseHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(_) {
-    return FakeHttpClient((request, client) {
-      // The default response is an empty 200.
-      return FakeHttpResponse();
-    });
-  }
+  HttpClient createHttpClient(_) => FakeHttpClient(
+        // The default fake response is an empty 200.
+        (request, client) => FakeHttpResponse(),
+      );
 }
 
 void main() {

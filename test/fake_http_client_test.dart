@@ -7,32 +7,31 @@ import 'package:test/test.dart';
 
 class _HttpTestOverrides extends HttpOverrides {
   FakeHttpClient? fakeHttpClient;
+
   @override
   HttpClient createHttpClient(SecurityContext? context) => fakeHttpClient!;
 }
 
 void main() {
-  final _HttpTestOverrides _httpOverrides = _HttpTestOverrides();
-  HttpOverrides.global = _httpOverrides;
+  final httpOverrides = _HttpTestOverrides();
+  HttpOverrides.global = httpOverrides;
 
   group(FakeHttpClient, () {
     setUp(() {
-      _httpOverrides.fakeHttpClient =
-          FakeHttpClient((HttpClientRequest request, FakeHttpClient client) {
-        return FakeHttpResponse(
+      httpOverrides.fakeHttpClient = FakeHttpClient(
+        (request, client) => FakeHttpResponse(
           body: 'Hello World',
-          statusCode: HttpStatus.ok,
           headers: {'foo': 'bar'},
-        );
-      });
+        ),
+      );
     });
 
     tearDown(() {
-      _httpOverrides.fakeHttpClient = null;
+      httpOverrides.fakeHttpClient = null;
     });
 
     test('can be provided using HttpOverrides', () {
-      final HttpClient client = HttpClient();
+      final client = HttpClient();
 
       expect(client, isA<FakeHttpClient>());
     });
@@ -51,12 +50,11 @@ void main() {
       const expectedPostRequestBody = 'Convey my regards!';
       String? actualPostRequestBody;
 
-      final fakeHttpClient = FakeHttpClient(
-          (FakeHttpClientRequest request, FakeHttpClient client) {
+      final fakeHttpClient = FakeHttpClient((request, client) {
         actualPostRequestBody = request.bodyText;
+
         return FakeHttpResponse(
           body: 'Hey',
-          statusCode: HttpStatus.ok,
         );
       });
 
@@ -73,14 +71,11 @@ void main() {
     test('get request body is empty in request callback', () async {
       String? actualPostRequestBody;
 
-      final fakeHttpClient = FakeHttpClient((
-        FakeHttpClientRequest request,
-        FakeHttpClient client,
-      ) {
+      final fakeHttpClient = FakeHttpClient((request, client) {
         actualPostRequestBody = request.bodyText;
+
         return FakeHttpResponse(
           body: 'Hey',
-          statusCode: HttpStatus.ok,
         );
       });
 
@@ -143,10 +138,8 @@ void main() {
 
 class _EmptyResponseHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(_) {
-    return FakeHttpClient((request, client) {
-      // The default response is an empty 200.
-      return FakeHttpResponse();
-    });
-  }
+  HttpClient createHttpClient(_) => FakeHttpClient(
+        // The default fake response is an empty 200.
+        (request, client) => FakeHttpResponse(),
+      );
 }

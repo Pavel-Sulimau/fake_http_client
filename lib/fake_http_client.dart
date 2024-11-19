@@ -4,7 +4,9 @@ import 'dart:io';
 
 /// Fakes a server response for the [FakeHttpClient].
 typedef RequestCallback = FutureOr<FakeHttpResponse> Function(
-    FakeHttpClientRequest, FakeHttpClient);
+  FakeHttpClientRequest,
+  FakeHttpClient,
+);
 
 /// A callback to simulate authentication.
 ///
@@ -21,7 +23,11 @@ typedef AuthenticateCallback = Future<bool> Function(Uri, String, String);
 /// This is not invoked automatically be the test client if set, but
 /// it can be accessed in the [RequestCallback] method.
 typedef AuthenticateProxyCallback = Future<bool> Function(
-    String, int, String, String);
+  String,
+  int,
+  String,
+  String,
+);
 
 /// A callback to simulate a bad certificate.
 ///
@@ -29,7 +35,7 @@ typedef AuthenticateProxyCallback = Future<bool> Function(
 ///
 /// This is not invoked automatically be the test client if set, but
 /// it can be accessed in the [RequestCallback] method.
-typedef BadCertificateCallback = Function(X509Certificate, String, int);
+typedef BadCertificateCallback = bool Function(X509Certificate, String, int);
 
 /// Callback which can be invoked to resolve a proxy [Uri].
 ///
@@ -41,8 +47,8 @@ typedef FindProxyCallback = String Function(Uri);
 
 /// A fake [HttpClient] for testing Flutter or Dart VM applications.
 ///
-/// Using [HttpOverrides.global] and an [FakeHttpClient], you can test code which
-/// uses [HttpClient()] without dependency injection. All you need to do
+/// Using [HttpOverrides.global] and an [FakeHttpClient], you can test code
+/// which uses [HttpClient()] without dependency injection. All you need to do
 /// is create a test client and specify how you want it to respond using a
 /// [RequestCallback].
 ///
@@ -56,7 +62,7 @@ typedef FindProxyCallback = String Function(Uri);
 ///   * [openUrl]
 ///   * [patchUrl]
 ///
-/// Any of the non *Url methods will throw.  The other members from the
+/// Any of the non *Url methods will throw. The other members from the
 /// http client can be read in the [RequestCallback] but won't be used
 /// otherwise. Currently [close], [addCredentials] and [addProxyCredentials]
 /// do nothing.
@@ -64,30 +70,29 @@ typedef FindProxyCallback = String Function(Uri);
 /// The following example forces all HTTP requests to return a
 /// successful empty response.
 ///
-///     class MyHttpOverrides extends HttpOverrides {
-///       HttpClient() createClient(_) {
-///         return FakeHttpClient((HttpRequest request, FakeHttpClient client) {
-///           return FakeHttpResponse();
-///         });
-///       }
-///     }
+/// ```dart
 ///
-///     void main() {
-///       // overrides all HttpClients.
-///       HttpOverrides.global = MyHttpOverrides();
+/// class MyHttpOverrides extends HttpOverrides {
+///   @override
+///   HttpClient createHttpClient(_) => FakeHttpClient(
+///     (request, client) => FakeHttpResponse(),
+///   );
+/// }
 ///
-///       group('Widget tests', () {
-///         test('returns 200', () async {
-///            // this is actually an instance of [FakeHttpClient].
-///            final client = HttpClient();
-///            final request = client.getUrl(Uri.https('google.com'));
-///            final response = await request.close();
-///
-///            expect(response.statusCode, HttpStatus.ok);
-///         });
-///       });
-///     }
-///
+/// void main() {
+///   // overrides all HttpClients.
+///   HttpOverrides.global = MyHttpOverrides();
+///   group('Widget tests', () {
+///     test('returns 200', () async {
+///        // this is actually an instance of [FakeHttpClient].
+///        final client = HttpClient();
+///        final request = client.getUrl(Uri.https('google.com'));
+///        final response = await request.close();
+///        expect(response.statusCode, HttpStatus.ok);
+///     });
+///   });
+/// }
+/// ```
 /// If you don't want to override all HttpClients, you can also use
 /// [HttpOverrides.runZoned].  Anything which executes in the provided callback
 /// will use the provided http client.
@@ -98,7 +103,13 @@ typedef FindProxyCallback = String Function(Uri);
 ///   * [FakeHttpResponse]
 ///   * [HttpOverrides]
 class FakeHttpClient implements HttpClient {
-  FakeHttpClient(this._requestCallback);
+  /// Creates an instance of [FakeHttpClient] with the given request callback.
+  ///
+  /// The [requestCallback] is a function that will be called for each HTTP
+  /// request made by this client. Fake responses are to be returned by this
+  /// callback.
+  FakeHttpClient(RequestCallback requestCallback)
+      : _requestCallback = requestCallback;
 
   final RequestCallback _requestCallback;
 
@@ -123,7 +134,11 @@ class FakeHttpClient implements HttpClient {
 
   @override
   void addProxyCredentials(
-      String host, int port, String realm, HttpClientCredentials credentials) {}
+    String host,
+    int port,
+    String realm,
+    HttpClientCredentials credentials,
+  ) {}
 
   @override
   AuthenticateCallback? authenticate;
@@ -263,12 +278,14 @@ class FakeHttpClient implements HttpClient {
   @override
   set connectionFactory(
     Future<ConnectionTask<Socket>> Function(
-            Uri url, String? proxyHost, int? proxyPort)?
-        f,
+      Uri url,
+      String? proxyHost,
+      int? proxyPort,
+    )? f,
   ) {}
 
   @override
-  set keyLog(Function(String line)? callback) {}
+  set keyLog(void Function(String line)? callback) {}
 }
 
 /// A fake [HttpClientResponse] to return in a [RequestCallback].
@@ -296,7 +313,7 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   /// or a `List<int>` - including `Uint8List` and other typed data objects.
   /// It defaults to the empty string, and will never be `null`;
   ///
-  /// The [statusCode] defaults to [HttpStatus.Ok].
+  /// The [statusCode] defaults to OK response.
   ///
   /// [headers] are empty by default.  Multiple header values can be passed
   /// in a comma-separated string.
@@ -308,7 +325,10 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
         HttpClientResponseCompressionState.notCompressed,
   }) {
     body ??= '';
-    assert(body is String || body is List<int>);
+    assert(
+      body is String || body is List<int>,
+      'Body must be either a String or a List<int>',
+    );
     List<int> codeUnits;
     if (body is String) {
       codeUnits = utf8.encode(body);
@@ -316,6 +336,7 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
       codeUnits = body as List<int>;
     }
     final HttpHeaders testHeaders = FakeHttpHeaders._(headers);
+
     return FakeHttpResponse._(
       codeUnits,
       statusCode,
@@ -387,8 +408,11 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
   String get reasonPhrase => '';
 
   @override
-  Future<HttpClientResponse> redirect(
-      [String? method, Uri? url, bool? followLoops]) {
+  Future<HttpClientResponse> redirect([
+    String? method,
+    Uri? url,
+    bool? followLoops,
+  ]) {
     throw UnsupportedError('');
   }
 
@@ -404,13 +428,17 @@ class FakeHttpResponse extends Stream<List<int>> implements HttpClientResponse {
 /// See also:
 ///
 ///   * [HttpClientRequest]
-class FakeHttpClientRequest extends HttpClientRequest {
+class FakeHttpClientRequest implements HttpClientRequest {
   FakeHttpClientRequest._(
     this._testClient,
     this.method,
     this.uri,
     this.headers,
-  );
+  )   : bufferOutput = false,
+        contentLength = 0,
+        followRedirects = true,
+        maxRedirects = 5,
+        persistentConnection = true;
 
   final FakeHttpClient _testClient;
   final List<int> _contentBuffer = <int>[];
@@ -459,9 +487,9 @@ class FakeHttpClientRequest extends HttpClientRequest {
     if (_isClosed) {
       throw StateError('writing to a closed HttpRequest');
     }
-    final Completer<void> completer = Completer<void>.sync();
+    final completer = Completer<void>.sync();
     stream.listen(
-      (List<int> data) => _contentBuffer.addAll(data),
+      _contentBuffer.addAll,
       onDone: completer.complete,
       cancelOnError: true,
     );
@@ -476,8 +504,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
     }
     await Future.wait(_pendingWrites);
     _isClosed = true;
-    final FutureOr<FakeHttpResponse> response =
-        _testClient._requestCallback(this, _testClient);
+    final response = _testClient._requestCallback(this, _testClient);
     _onDone.complete(response);
     return response;
   }
@@ -495,7 +522,7 @@ class FakeHttpClientRequest extends HttpClientRequest {
     if (_isClosed) {
       throw StateError('writing to a closed HttpRequest');
     }
-    final List<int> codeUnits = encoding.encode(obj.toString());
+    final codeUnits = encoding.encode(obj.toString());
     _contentBuffer.addAll(codeUnits);
   }
 
@@ -525,6 +552,21 @@ class FakeHttpClientRequest extends HttpClientRequest {
 
   @override
   void abort([Object? exception, StackTrace? stackTrace]) {}
+
+  @override
+  bool bufferOutput;
+
+  @override
+  int contentLength;
+
+  @override
+  bool followRedirects;
+
+  @override
+  int maxRedirects;
+
+  @override
+  bool persistentConnection;
 }
 
 /// A fake implementation of [HttpHeaders].
@@ -535,16 +577,19 @@ class FakeHttpClientRequest extends HttpClientRequest {
 /// See also:
 ///
 ///   * [HttpHeaders]
-class FakeHttpHeaders extends HttpHeaders {
+class FakeHttpHeaders implements HttpHeaders {
   factory FakeHttpHeaders._(Map<String, String> headers) {
-    final Map<String, List<String>> values = <String, List<String>>{};
+    final values = <String, List<String>>{};
     headers.forEach((String key, String value) {
       values[key] = value.split(',').map((value) => value.trim()).toList();
     });
     return FakeHttpHeaders.__(values);
   }
 
-  FakeHttpHeaders.__(this._headers);
+  FakeHttpHeaders.__(this._headers)
+      : chunkedTransferEncoding = false,
+        contentLength = 0,
+        persistentConnection = false;
 
   final Map<String, List<String>> _headers;
 
@@ -588,10 +633,37 @@ class FakeHttpHeaders extends HttpHeaders {
 
   @override
   String? value(String name) {
-    final List<String>? values = _headers[name];
+    final values = _headers[name];
     if (values == null) {
       return null;
     }
     return values.single;
   }
+
+  @override
+  bool chunkedTransferEncoding;
+
+  @override
+  int contentLength;
+
+  @override
+  ContentType? contentType;
+
+  @override
+  DateTime? date;
+
+  @override
+  DateTime? expires;
+
+  @override
+  String? host;
+
+  @override
+  DateTime? ifModifiedSince;
+
+  @override
+  bool persistentConnection;
+
+  @override
+  int? port;
 }

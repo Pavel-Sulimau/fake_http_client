@@ -1,13 +1,14 @@
 name: fake_http_client
-version: 1.0.0
+version: 2.0.0
 description: >-
   A package for faking Dart/Flutter HttpClient's responses.
   It is handy for integration tests. Also it may help a lot during
   app development with an unstable back-end.
-homepage: https://github.com/Pavel-Sulimau/fake_http_client
+repository: https://github.com/Pavel-Sulimau/fake_http_client
 environment:
-  sdk: ">=2.18.0 <3.0.0"
+  sdk: ^3.0.0
 
 dev_dependencies:
-  http: ^0.13.5
+  http: ^1.2.2
   test: any
+  very_good_analysis: ^6.0.0
